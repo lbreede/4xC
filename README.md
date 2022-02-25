@@ -1,2 +1,2 @@
 # 4xC
-Coding Challenge Copycat
+Coding Challenge Copy Cat
