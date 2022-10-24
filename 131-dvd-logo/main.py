@@ -1,6 +1,7 @@
 import pygame, sys
 from random import randrange
-from debug import debug
+
+# from debug import debug
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
