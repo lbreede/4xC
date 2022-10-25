@@ -66,7 +66,7 @@ def play():
 
         winner = check_if_won()
         if winner:
-            print(f"We have a winner! Congratualtins [{winner}] !!!\n")
+            print(f"We have a winner! Congratualtions [{winner}] !!!\n")
             break
     else:
         print("We have a tie!\n")
