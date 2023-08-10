@@ -1,92 +1,94 @@
-import pygame, sys
-from random import randrange
+import colorsys
+import random
+import sys
 
-# from debug import debug
+import pygame
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-LOGO_WIDTH = 100
-LOGO_HEIGHT = 60
 FPS = 60
 
 
-def fill(surface, color):
-    """Fill all pixels of the surface with color, preserve transparency."""
-    w, h = surface.get_size()
-    r, g, b, _ = color
-    for x in range(w):
-        for y in range(h):
-            a = surface.get_at((x, y))[3]
-            surface.set_at((x, y), pygame.Color(r, g, b, a))
+def fill(surface: pygame.Surface, rgb: tuple[float, float, float]) -> None:
+    """Fill the surface with the given RGB color, preserving the alpha value.
+
+    Args:
+        surface: The surface to fill.
+        rgb: The RGB color to fill the surface with.
+
+    """
+    width, height = surface.get_size()
+    red, green, blue = [int(value * 255) for value in rgb]
+    for x in range(width):
+        for y in range(height):
+            alpha = surface.get_at((x, y))[3]
+            surface.set_at((x, y), pygame.Color(red, green, blue, alpha))
 
 
-def rand_color():
-    h = randrange(360)
-    return color_hsva(h, 100, 100)
+def rand_color() -> tuple[float, float, float]:
+    """Return a random RGB color."""
+    return colorsys.hsv_to_rgb(random.random(), 1, 1)
 
 
-def rainbow(i):
-    h = i % 360
-    return color_hsva(h, 100, 100)
+def main():
+    # Basic setup
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("DVD Logo")
+    clock = pygame.time.Clock()
 
+    # DVD logo setup
+    dvd_surf = pygame.image.load("dvd_logo.png").convert_alpha()
+    logo_width = dvd_surf.get_width()
+    logo_height = dvd_surf.get_height()
+    fill(dvd_surf, rand_color())
+    x = random.randrange(SCREEN_WIDTH - logo_width)
+    y = random.randrange(SCREEN_HEIGHT - logo_height)
+    dvd_rect = dvd_surf.get_rect(topleft=(x, y))
+    velx = vely = 1
+    speed = 2
 
-def color_hsva(h, s, v):
-    color = pygame.Color(0, 0, 0)
-    color.hsva = (h, s, v)
-    return color
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
+        screen.fill("Black")
 
-# Basic setup
-pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("DVD Logo")
-clock = pygame.time.Clock()
+        dvd_rect.x += velx * speed
+        dvd_rect.y += vely * speed
 
-# DVD logo setup
-dvd_surf = pygame.image.load("dvd_logo.png").convert_alpha()
-fill(dvd_surf, rand_color())
-x = randrange(SCREEN_WIDTH - LOGO_WIDTH)
-y = randrange(SCREEN_HEIGHT - LOGO_HEIGHT)
-dvd_rect = dvd_surf.get_rect(topleft=(x, y))
-velx = vely = 1
-speed = 2
+        hit_left = dvd_rect.left <= 0
+        hit_right = dvd_rect.right >= SCREEN_WIDTH
+        hit_top = dvd_rect.top <= 0
+        hit_bottom = dvd_rect.bottom >= SCREEN_HEIGHT
 
-i = 0
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-    screen.fill("Black")
-
-    dvd_rect.x += velx * speed
-    dvd_rect.y += vely * speed
-
-    hit_left = dvd_rect.left <= 0
-    hit_right = dvd_rect.right >= SCREEN_WIDTH
-    hit_top = dvd_rect.top <= 0
-    hit_bottom = dvd_rect.bottom >= SCREEN_HEIGHT
-
-    if any((hit_left, hit_right, hit_top, hit_bottom)):
-        if any((hit_left, hit_right)):
-            if hit_left:
-                dvd_rect.left = 0
-            if hit_right:
-                dvd_rect.right = SCREEN_WIDTH
+        if hit_left:
+            dvd_rect.left = 0
             velx = -velx
-        if any((hit_top, hit_bottom)):
-            if hit_top:
-                dvd_rect.top = 0
-            if hit_bottom:
-                dvd_rect.bottom = SCREEN_HEIGHT
+            fill(dvd_surf, rand_color())
+
+        if hit_right:
+            dvd_rect.right = SCREEN_WIDTH
+            velx = -velx
+            fill(dvd_surf, rand_color())
+
+        if hit_top:
+            dvd_rect.top = 0
             vely = -vely
-        fill(dvd_surf, rand_color())
+            fill(dvd_surf, rand_color())
 
-    # fill(dvd_surf, rainbow(i))
-    screen.blit(dvd_surf, dvd_rect)
-    # debug(dvd_rect)
+        if hit_bottom:
+            dvd_rect.bottom = SCREEN_HEIGHT
+            vely = -vely
+            fill(dvd_surf, rand_color())
 
-    pygame.display.update()
-    clock.tick(FPS)
-    i += 1
+        screen.blit(dvd_surf, dvd_rect)
+
+        pygame.display.update()
+        clock.tick(FPS)
+
+
+if __name__ == "__main__":
+    main()
